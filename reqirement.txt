@@ -1,0 +1,104 @@
+##Assign##
+=>ACS?: 
+ #step 1#=> local =code=> virtual =ifconfig=> local 
+..
+#working processes#
+=>docker pull ubuntu
+  simple?:
+  =>docker run -d --name ubuntu-my-server ubuntu tail -f /dev/null
+  =>docker exec -it ubuntu-my-server bash
+  =>docker start ubuntu-my-server 
+
+ ssh?:
+ =>Dokcerfile
+ # Dockerfile
+FROM ubuntu:latest
+
+# Install OpenSSH server, sudo, and net-tools
+RUN apt-get update && apt-get install -y openssh-server sudo net-tools
+
+# Create a user for SSH access
+# 'sshuser' is part of the 'sudo' group now
+RUN useradd -rm -d /home/sshuser -s /bin/bash -g root -G sudo sshuser
+RUN echo 'sshuser:password' | chpasswd # CHANGE 'password' to a strong password
+
+# Expose the SSH port
+EXPOSE 22
+
+# Configure SSH server
+RUN mkdir /var/run/sshd
+RUN sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
+
+# Start SSH service
+CMD ["/usr/sbin/sshd", "-D"]
+
+ =>docker build -t ssh-ubuntu-image .
+ =>docker run -d -p 2222:22 --name my-ssh-container ssh-ubuntu-image
+ =>ssh sshuser@localhost -p 2222
+<=
+.
+=> ssh_connector.py =pip install paramiko=> python code.py
+=>#ssh_connector.py#<=
+import paramiko
+import time
+
+# --- SSH Connection Details ---
+HOSTNAME = "localhost"
+PORT = 2222
+USERNAME = "sshuser"
+PASSWORD = "password"  # Dockerfile ထဲမှာ ထည့်ထားတဲ့ password ကို ဒီမှာ ထည့်ပါ။
+# ------------------------------
+
+
+def connect_and_run_command(hostname, port, username, password, command):
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(
+        paramiko.AutoAddPolicy()
+    )  # Unknown host key တွေ့ရင် အလိုအလျောက်လက်ခံရန်
+
+    print(f"Connecting to {username}@{hostname}:{port}...")
+    try:
+        client.connect(hostname, port, username, password)
+        print("Successfully connected!")
+
+        print(f"Executing command: '{command}'")
+        stdin, stdout, stderr = client.exec_command(command)
+
+        # Read output from stdout
+        output = stdout.read().decode().strip()
+        if output:
+            print("\n--- Command Output (stdout) ---")
+            print(output)
+            print("-------------------------------\n")
+
+        # Read output from stderr (for errors)
+        errors = stderr.read().decode().strip()
+        if errors:
+            print("\n--- Command Errors (stderr) ---")
+            print(errors)
+            print("-------------------------------\n")
+
+    except paramiko.AuthenticationException:
+        print("Authentication failed. Check your username and password.")
+    except paramiko.SSHException as e:
+        print(f"SSH connection error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    finally:
+        if client:
+            client.close()
+            print("SSH connection closed.")
+
+
+if __name__ == "__main__":
+    # Wait a bit to ensure Docker container and SSH server are fully up
+    # This might be needed if you run the script immediately after 'docker run'
+    print("Waiting for Docker container's SSH service to be ready (5 seconds)...")
+    time.sleep(5)  # You can adjust this delay
+
+    # Run the ifconfig command
+    connect_and_run_command(HOSTNAME, PORT, USERNAME, PASSWORD, "ifconfig")
+
+    # Example of another command
+    # connect_and_run_command(HOSTNAME, PORT, USERNAME, PASSWORD, "ls -l /")
+<=
