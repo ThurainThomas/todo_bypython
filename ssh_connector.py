@@ -22,29 +22,32 @@ def connect_and_run_sudo_command(
         client.connect(hostname, port, username, password)
         print("Successfully connected!")
 
-        # sudo command ကို -S option နဲ့ ခေါ်ပြီး password ကို stdin ကနေ ပို့မယ်။
-        # command_to_run_as_sudo ကို quotes '...' နဲ့ ပတ်ပေးရပါမယ်၊ ဒါမှ sudo က command တစ်ခုတည်းလို့ သိမှာပါ။
-        full_command = f"sudo -S {command_to_run_as_sudo}"
+        full_command = f"sudo -S bash -c '{command_to_run_as_sudo}'"
         print(f"Executing command: '{full_command}'")
 
-        stdin, stdout, stderr = client.exec_command(full_command)
+        # Get the channel object for more control over stdin/stdout/stderr
+        channel = client.get_transport().open_session()
+        channel.exec_command(full_command)
 
-        # sudo password ကို stdin ထဲကို ရိုက်ထည့်လိုက်
-        stdin.write(sudo_password + "\n")
-        stdin.flush()  # Data ကို ချက်ချင်း ပို့အောင်လုပ်
+        # Write sudo password to stdin
+        channel.sendall(sudo_password + "\n")  # Use sendall for robustness
 
-        # Read output from stdout
-        output = stdout.read().decode().strip()
-        if output:
+        stdout_data = channel.makefile("rb", -1).read().decode().strip()
+        stderr_data = channel.makefile_stderr("rb", -1).read().decode().strip()
+
+        # Close the channel after reading all output
+        channel.close()
+
+        if stdout_data:
             print("\n--- Command Output (stdout) ---")
-            print(output)
+            print(stdout_data)
             print("-------------------------------\n")
 
-        # Read output from stderr (for errors)
-        errors = stderr.read().decode().strip()
-        if errors:
+        is_sudo_password_prompt = stderr_data.lower().startswith("[sudo] password for")
+
+        if stderr_data and not is_sudo_password_prompt:
             print("\n--- Command Errors (stderr) ---")
-            print(errors)
+            print(stderr_data)
             print("-------------------------------\n")
 
     except paramiko.AuthenticationException:
@@ -61,14 +64,9 @@ def connect_and_run_sudo_command(
 
 if __name__ == "__main__":
     print("Waiting for Docker container's SSH service to be ready (5 seconds)...")
-    time.sleep(5)  # Docker container ရဲ့ SSH service တက်လာဖို့ စောင့်
+    time.sleep(5)
 
-    # ဥပမာ: root အနေနဲ့ 'whoami' ကို run ကြည့်မယ်
-    command_to_execute_whoami = "whoami"
+    command_to_execute_as_root = "cd / && pwd"
     connect_and_run_sudo_command(
-        HOSTNAME, PORT, USERNAME, PASSWORD, PASSWORD, command_to_execute_whoami
+        HOSTNAME, PORT, USERNAME, PASSWORD, PASSWORD, command_to_execute_as_root
     )
-
-    # ဥပမာ: root အနေနဲ့ package တစ်ခု install လုပ်မယ် (sudo apt update && sudo apt install -y something)
-    # command_to_execute_install = "apt update && apt install -y nano"
-    # connect_and_run_sudo_command(HOSTNAME, PORT, USERNAME, PASSWORD, PASSWORD, command_to_execute_install)

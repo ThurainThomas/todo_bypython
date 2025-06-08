@@ -43,11 +43,6 @@ import paramiko
 import time
 
 # --- SSH Connection Details ---
-Step 3 of ssh_connector.py code is and we were set up to sudo su. 
-So that contain again,
- =>" full_command = f"sudo -S {command_to_run_as_sudo}" " and
- =>" stdin.write(sudo_password + "\n")
-    stdin.flush() " by stadin.
-It can had 
-" --- Command Errors (stderr) ---
-[sudo] password for sshuser:  " that isn't error. 
+We don't know so should it know?
+channel = client.get_transport().open_session()
+channel.makefile('rb', -1) and channel.makefile_stderr('rb', -1)
