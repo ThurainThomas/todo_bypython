@@ -1,0 +1,16 @@
+flowchart TD
+    A[Start] --> B[Export Data to CSV]
+    B --> C{Export Successful?}
+    C -->|Yes| D[Print Success Message]
+    C -->|No| E[Handle Export Error]
+    D --> F[Import Data from CSV]
+    E --> F[Import Data from CSV]
+    F --> G{Input File Exists?}
+    G -->|Yes| H[Read CSV File]
+    G -->|No| I[Print Error: File Does Not Exist]
+    H --> J{Read Successful?}
+    J -->|Yes| K[Print Imported Data]
+    J -->|No| L[Handle Import Error]
+    K --> M[End]
+    L --> M[End]
+    I --> M[End]

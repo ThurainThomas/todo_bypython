@@ -3,4 +3,10 @@ test.py
 => How do you write code to import and export using CSV?
  =>Need to create?: input.csv, output.csv.
  =>Used Modules?: csv, os
-  =>How to work?: build a dictionaries that is export output.csv and input.csv is used print. 
+  =>How to work?: build a dictionaries that is export output.csv and input.csv is used print.
+
+New Add
+*******
+=> test.mmd 
+ =>Need to extension?: vscode-mermaid, mermaid preview
+ 
