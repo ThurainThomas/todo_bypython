@@ -1,12 +1,22 @@
 test.py
 *******
-=> How do you write code to import and export using CSV?
- =>Need to create?: input.csv, output.csv.
- =>Used Modules?: csv, os
-  =>How to work?: build a dictionaries that is export output.csv and input.csv is used print.
+=>Gemini is asked?
+ => input csv fileထဲတွင် 
+     "Name,Age
+     Thurain Win,20
+     Kyaw Kyaw,35"ရေးထားတာတွေအပြင် နောက်ထပ် columnတစ်ခုဖြင့် addressထပ်ထည့်လို့ရအောင် ရေးသာဖော်ပြပေးပါ။
+ => Name ကို ကြိုပြီး မသိနိုင်ဘူးလေ ထိုကြောင့် nameလုပ်ဆောင်ချက်ကို ထပ်မထည့်ပဲရေးပေးပါ။
 
-New Add
-*******
-=> test.mmd 
- =>Need to extension?: vscode-mermaid, mermaid preview
- 
+=>Code Processes?
+ =>1. Read existing data from input.csv
+  =>1a. fieldnames and row are added list variable.
+ =>2. Add 'Address' column to headers (if not already present)
+ =>3. Prepare data for writing
+  =>3a. Ensure all existing rows have the new column, initialized as empty if missing
+  =>3b. If the 'Address' field in this row is currently empty AND we have new address data to assign
+   => Move to the next address for the next empty row
+  =>3c. Ensure all columns in `current_fieldnames` are present in the row, filling missing ones with empty string
+  =>3d. Append any remaining address data as entirely new row
+   => For new rows, only fill the 'Address' column from our new data, others are empty
+ =>4. Rewrite the entire CSV file
+ =>5. Read and display the current content of the output CSV file 
