@@ -10,3 +10,10 @@ channel.basic_publish(exchange="", routing_key="hello", body=message)
 print(f" [x] Sent {message}")
 
 connection.close()
+
+
+"""
+Forgotten acknowledgment
+sudo rabbitmqctl list_queues name messages_ready messages_unacknowledged
+sudo rabbitmqctl delete_queue task_queue
+"""
