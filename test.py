@@ -4,9 +4,10 @@ import os
 file_path = "input.csv"
 output_file_path = "input_update.csv"
 
-address_data_to_add_or_update = [{"Address": "Yangon"}, {"Address": "Mandalay"}]
 
-new_column_to_add = "Address"
+grade_data_to_add_or_update = [{"Grade": "A"}, {"Grade": "B"}, {"Grade": "C"}]
+
+new_column_to_add = "Grade"
 
 existing_data_rows = []
 current_fieldnames = []
@@ -23,24 +24,36 @@ else:
     )
     exit()
 
+# *** အပြောင်းအလဲ အပိုင်း - Address Column ကို ဖယ်ရှားပြီး Grade Column ထည့်သွင်းခြင်း ***
+# လက်ရှိ fieldnames ထဲက "Address" ကို ဖယ်ရှားပါ
+if "Address" in current_fieldnames:
+    current_fieldnames.remove("Address")
+
 if new_column_to_add not in current_fieldnames:
     current_fieldnames.append(new_column_to_add)
+# ***************************************************************
+
 
 updated_rows_for_write = []
-address_data_index = 0
+grade_data_index = 0
 
 for row in existing_data_rows:
     temp_row = row.copy()
+
+    # Address column ကို temp_row ကနေ ဖယ်ရှားပါ (ရှိခဲ့ရင်)
+    if "Address" in temp_row:
+        del temp_row["Address"]
+
     if new_column_to_add not in temp_row:
         temp_row[new_column_to_add] = ""
 
-    if not temp_row[new_column_to_add] and address_data_index < len(
-        address_data_to_add_or_update
+    if not temp_row[new_column_to_add] and grade_data_index < len(
+        grade_data_to_add_or_update
     ):
-        temp_row[new_column_to_add] = address_data_to_add_or_update[
-            address_data_index
-        ].get("Address", "")
-        address_data_index += 1
+        temp_row[new_column_to_add] = grade_data_to_add_or_update[grade_data_index].get(
+            "Grade", ""
+        )
+        grade_data_index += 1
 
     for field in current_fieldnames:
         if field not in temp_row:
@@ -48,17 +61,17 @@ for row in existing_data_rows:
 
     updated_rows_for_write.append(temp_row)
 
-while address_data_index < len(address_data_to_add_or_update):
+while grade_data_index < len(grade_data_to_add_or_update):
     new_row_dict = {}
     for field in current_fieldnames:
         if field == new_column_to_add:
-            new_row_dict[field] = address_data_to_add_or_update[address_data_index].get(
-                "Address", ""
+            new_row_dict[field] = grade_data_to_add_or_update[grade_data_index].get(
+                "Grade", ""
             )
         else:
             new_row_dict[field] = ""
     updated_rows_for_write.append(new_row_dict)
-    address_data_index += 1
+    grade_data_index += 1
 
 
 with open(output_file_path, "w", newline="", encoding="utf-8") as file:
